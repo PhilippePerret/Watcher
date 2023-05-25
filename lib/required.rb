@@ -4,6 +4,7 @@ require 'yaml'
 APP_FOLDER = File.dirname(__dir__)
 
 require_relative 'required/constants'
+require_relative 'required/crontab'
 require_relative 'required/config'
 require_relative 'required/backup'
 require_relative 'required/watcher'
