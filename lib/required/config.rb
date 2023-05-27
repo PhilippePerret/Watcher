@@ -1,7 +1,11 @@
+#
+# Gestion du fichier de configuration
+# 
 module Watcher
 class Config
 class << self
 
+  # @return [String] Path du dossier surveillé
   def watched_folder
     @watched_folder ||= data[:watched_folder]
   end
