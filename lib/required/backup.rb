@@ -27,6 +27,7 @@ class << self
     # s'il a été modifié aujourd'hui
     # 
     WatchedFolder.each_item do |item|
+      puts "Check de #{item.inspect}"
       item.backup if item.modified?
     end
 

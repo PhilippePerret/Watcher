@@ -2,11 +2,15 @@ module Watcher
 class WatchedFolderClass
 class Item
 
-  attr_reader :folder, :path
+  attr_reader :watched_folder, :path
 
   def initialize(watched_folder, path)
     @path   = path
-    @folder = watched_folder
+    @watched_folder = watched_folder
+  end
+
+  def inspect
+    @inspect ||= "#<WatchedFolder::Item .#{relpath}>"
   end
 
   ##
@@ -19,19 +23,31 @@ class Item
   # @return true si l'item (fichier ou dossier) a été modifié
   # 
   def modified?
-    if directory?
-    else
-      File.stat(path).mtime > remote_file.mtime
-    end  
+    puts "mtime = #{mtime}"
+    mtime > remote_item.mtime
   end
 
   def directory?
     File.directory?(path)
   end
 
-  # @return [RemoteFile] Le fichier miroir distant
-  def remote_file
-    @remote_file ||= RemoteFile.new(self)
+  # @return [Time] Date de dernière modification
+  def mtime
+    if directory?
+      mt = Time.new(2000,1,1)
+      Dir["#{path}/**/*.*"].each do |f|
+        fmtime = File.stat(f).mtime
+        mt = fmtime if fmtime > mt
+      end
+      return mt
+    else
+      File.stat(path).mtime
+    end
+  end
+
+  # @return [RemoteItem] Le fichier miroir distant
+  def remote_item
+    @remote_item ||= RemoteItem.new(self)
   end
 
   # @return [String] Le chemin d'accès (relatif) à cet élément
@@ -41,13 +57,17 @@ class Item
   def remote_path
     @remote_path ||= begin
       f = File.join(folder, ".#{affixe}")
-      if File.exist?(f)
-        File.read(f)
-      else
+      unless File.exist?(f)
         rpath = Q.ask("Quel est le chemin relatif de l'élément '#{affixe}' (à partir de #{Webdav.base})".jaune) || return
-        File.write(f, rpath.strip)
+        rpath = rpath.strip
+        File.write(f, rpath)
       end
+      File.read(f).strip
     end
+  end
+
+  def relpath
+    @relpath ||= path.sub(/^#{watched_folder.path}/,'')
   end
 
   def folder

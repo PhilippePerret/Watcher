@@ -4,6 +4,7 @@ module Watcher
   # @entry
   # 
   # Point d'entrée du programme
+  # 
   def self.run
     case CLI.main_command
     when 'help', 'aide'
